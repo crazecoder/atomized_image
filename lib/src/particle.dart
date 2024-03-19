@@ -56,8 +56,8 @@ class Particle {
     }
 
     if (touchPointer.offset != null) {
-      final touchSize = touchPointer.touchSize;
-      final touch = Vector2(touchPointer.offset.dx, touchPointer.offset.dy);
+      final touchSize = touchPointer.touchSize??0;
+      final touch = Vector2(touchPointer.offset?.dx??0, touchPointer.offset?.dy??0);
       final distToTouch = pos.distanceTo(touch);
       if (distToTouch < touchSize) {
         final push = pos.clone()..sub(touch);

@@ -12,9 +12,9 @@ import 'particle.dart';
 
 class Pixels {
   const Pixels({
-    @required this.byteData,
-    @required this.width,
-    @required this.height,
+    required this.byteData,
+    required this.width,
+    required this.height,
   });
 
   final ByteData byteData;
@@ -32,15 +32,15 @@ class Pixels {
 }
 
 class TouchPointer {
-  double touchSize;
-  Offset offset;
+  double? touchSize;
+  Offset? offset;
 }
 
 class TouchDetector extends StatelessWidget {
   const TouchDetector({
-    Key key,
-    @required this.touchPointer,
-    @required this.child,
+    Key? key,
+    required this.touchPointer,
+    required this.child,
   }) : super(key: key);
 
   final TouchPointer touchPointer;
@@ -48,7 +48,7 @@ class TouchDetector extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final enabled = touchPointer.touchSize > 0;
+    final enabled = (touchPointer.touchSize??0) > 0;
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
       onPanStart: enabled
@@ -70,17 +70,13 @@ class AtomizedImage extends StatelessWidget {
   /// When the [image] changes. The particles will be animated to transition
   /// to the new image.
   const AtomizedImage({
-    Key key,
-    @required this.image,
+    Key? key,
+    required this.image,
     this.onImageError,
     this.touchRadius = 100,
     this.particleRadius = 8,
-  })  : assert(image != null),
-        assert(
-          touchRadius != null,
-          'touchRadius must be set, to disable the touch, set it to 0 instead',
-        ),
-        assert(particleRadius != null && particleRadius > 0),
+  })  : 
+        assert(particleRadius > 0),
         super(key: key);
 
   /// The image to 'atomize'.
@@ -91,7 +87,7 @@ class AtomizedImage extends StatelessWidget {
 
   /// An optional error callback for errors emitted when loading
   /// [image].
-  final ImageErrorListener onImageError;
+  final ImageErrorListener? onImageError;
 
   /// The distance from which the particles will be put away when the user
   /// touches the widget.
@@ -128,17 +124,17 @@ class AtomizedImage extends StatelessWidget {
 
 class RawAtomizedImage extends StatefulWidget {
   const RawAtomizedImage({
-    Key key,
-    @required this.provider,
-    @required this.onError,
-    @required this.configuration,
-    @required this.size,
-    @required this.touchSize,
-    @required this.particleSize,
+    Key? key,
+    required this.provider,
+    this.onError,
+    required this.configuration,
+    required this.size,
+    required this.touchSize,
+    required this.particleSize,
   }) : super(key: key);
 
   final ImageProvider<Object> provider;
-  final ImageErrorListener onError;
+  final ImageErrorListener? onError;
   final ImageConfiguration configuration;
   final Size size;
   final double touchSize;
@@ -152,9 +148,9 @@ class _RawAtomizedImageState extends State<RawAtomizedImage>
     with SingleTickerProviderStateMixin {
   final List<Particle> particles = <Particle>[];
   final TouchPointer touchPointer = TouchPointer();
-  ui.Image image;
-  Pixels pixels;
-  AnimationController controller;
+  ui.Image? image;
+  late Pixels pixels;
+  late AnimationController controller;
 
   @override
   void initState() {
@@ -187,11 +183,11 @@ class _RawAtomizedImageState extends State<RawAtomizedImage>
   Future<void> loadPixels() async {
     final imageStream = widget.provider.resolve(widget.configuration);
     final completer = Completer<ui.Image>();
-    ImageStreamListener imageStreamListener;
+    ImageStreamListener? imageStreamListener;
     imageStreamListener = ImageStreamListener(
       (frame, _) {
         completer.complete(frame.image);
-        imageStream.removeListener(imageStreamListener);
+        imageStream.removeListener(imageStreamListener!);
       },
       onError: widget.onError,
     );
@@ -199,7 +195,7 @@ class _RawAtomizedImageState extends State<RawAtomizedImage>
     final image = await completer.future;
     final byteData = await image.toByteData(format: ui.ImageByteFormat.rawRgba);
     final pixels = Pixels(
-      byteData: byteData,
+      byteData: byteData!,
       width: image.width,
       height: image.height,
     );
@@ -293,7 +289,7 @@ class ParticulesPainter extends CustomPainter {
 
       final color = particle.currentColor;
       particle.currentColor = Color.lerp(
-          particle.currentColor, particle.endColor, particle.colorBlendRate);
+          particle.currentColor, particle.endColor, particle.colorBlendRate)!;
       double targetSize = 2;
       if (!particle.isKilled) {
         targetSize = map(
@@ -306,7 +302,7 @@ class ParticulesPainter extends CustomPainter {
       }
 
       particle.currentSize =
-          ui.lerpDouble(particle.currentSize, targetSize, 0.1);
+          ui.lerpDouble(particle.currentSize, targetSize, 0.1)??0;
 
       final center = Offset(particle.pos.x, particle.pos.y);
       canvas.drawCircle(center, particle.currentSize, Paint()..color = color);
